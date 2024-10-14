@@ -3,7 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //template <class node_type, class edge_type>
-public class SparseGraph : MonoBehaviour
+
+public abstract class Graph : MonoBehaviour
+{
+    public abstract int NumNodes();
+    //public abstract List<GraphNode> GetNodes();
+    //public abstract List<List<GraphEdge>> GetEdges();
+}
+
+public class SparseGraph : Graph
 {
 
     //typedef edge_type EdgeType;
@@ -33,6 +41,10 @@ public class SparseGraph : MonoBehaviour
     {
         return m_Edges;
     }
+    public List<GraphEdge> GetNodeEdges(int node)
+    {
+        return m_Edges[node];
+    }
     //returns true if an edge is not already present in the graph. Used
     //when adding edges to make sure no duplicates are created.
     bool UniqueEdge(int from, int to)
@@ -49,9 +61,19 @@ public class SparseGraph : MonoBehaviour
 
     //iterates through all the edges in the graph and removes any that point
     //to an invalidated node
-    void CullInvalidEdges()
+    public void CullInvalidEdges()
     {
-
+        for (int edgeListIndex = 0; edgeListIndex < m_Edges.Count; edgeListIndex++)
+        {
+            for (int i = m_Edges[edgeListIndex].Count-1; i >= 0; i--)
+            {
+                GraphEdge myEdge = m_Edges[edgeListIndex][i];
+                if (m_Nodes[myEdge.To()].Index() == (int)Nodetype.invalid_node_index || m_Nodes[myEdge.From()].Index() == (int)Nodetype.invalid_node_index)
+                {
+                    m_Edges[edgeListIndex].RemoveAt(i);
+                }
+            }
+        }
     }
 
     //ctor
@@ -64,8 +86,8 @@ public class SparseGraph : MonoBehaviour
     public GraphNode GetNode(int idx) { return m_Nodes[idx]; }
     public GraphEdge GetEdge(int from, int to)
     {
-        Debug.Assert((from < m_Nodes.Count) && (from >= 0) && m_Nodes[from].Index() != (int)NodeType.invalid_node_index, "<SparseGraph::GetEdge>: invalid 'from' index");
-        Debug.Assert((to < m_Nodes.Count) && (to >= 0) && m_Nodes[to].Index() != (int)NodeType.invalid_node_index, "<SparseGraph::GetEdge>: invalid 'to' index");
+        Debug.Assert((from < m_Nodes.Count) && (from >= 0) && m_Nodes[from].Index() != (int)Nodetype.invalid_node_index, "<SparseGraph::GetEdge>: invalid 'from' index");
+        Debug.Assert((to < m_Nodes.Count) && (to >= 0) && m_Nodes[to].Index() != (int)Nodetype.invalid_node_index, "<SparseGraph::GetEdge>: invalid 'to' index");
 
         foreach (GraphEdge edge in m_Edges[from])
         {
@@ -87,7 +109,7 @@ public class SparseGraph : MonoBehaviour
         {
             //make sure the client is not trying to add a node with the same ID as
             //a currently active node
-            Debug.Assert(m_Nodes[node.Index()].Index() == (int)NodeType.invalid_node_index, "<SparseGraph::AddNode>: Attempting to add a node with a duplicate ID");
+            Debug.Assert(m_Nodes[node.Index()].Index() == (int)Nodetype.invalid_node_index, "<SparseGraph::AddNode>: Attempting to add a node with a duplicate ID");
 
             m_Nodes[node.Index()] = node;
 
@@ -114,27 +136,40 @@ public class SparseGraph : MonoBehaviour
         Debug.Assert(node < (int)m_Nodes.Count, "<SparseGraph::RemoveNode>: invalid node index");
 
         //set this node's index to invalid_node_index
-        m_Nodes[node].SetIndex((int)NodeType.invalid_node_index);
+        m_Nodes[node].SetIndex((int)Nodetype.invalid_node_index);
 
         //if the graph is not directed remove all edges leading to this node and then
         //clear the edges leading from the node
         if (!m_bDigraph)
         {
             //visit each neighbour and erase any edges leading to this node
-            foreach (GraphEdge edge in m_Edges[node])
+            foreach (GraphEdge edge in m_Edges[node].ToArray())
             {
-                foreach (GraphEdge neighborNodeEdge in m_Edges[edge.To()])
+                for (int neighbourEdge = m_Edges[edge.To()].Count-1; neighbourEdge >= 0; neighbourEdge--)
                 {
-                    if (neighborNodeEdge.To() == node)
+                    if (m_Edges[edge.To()][neighbourEdge].To() == node)
                     {
-                        m_Edges[edge.To()].Remove(neighborNodeEdge);
+                        m_Edges[edge.To()].RemoveAt(neighbourEdge);
                         break;
                     }
                 }
+                //foreach (GraphEdge neighborNodeEdge in m_Edges[edge.To()].ToArray())
+                //{
+                //    if (neighborNodeEdge.To() == node)
+                //    {
+                //        m_Edges[edge.To()].Remove(neighborNodeEdge);
+                //        break;
+                //    }
+                //}
             }
 
             //finally, clear this node's edges
             m_Edges[node].Clear();
+        }
+        //if a digraph remove the edges the slow way
+        else
+        {
+            CullInvalidEdges();
         }
     }
 
@@ -145,7 +180,7 @@ public class SparseGraph : MonoBehaviour
         Debug.Assert((edge.From() < m_iNextNodeIndex) && (edge.To() < m_iNextNodeIndex), "<SparseGraph::AddEdge>: invalid node index");
 
         //make sure both nodes are active before adding the edge
-        if ((m_Nodes[edge.To()].Index() != (int)NodeType.invalid_node_index) && (m_Nodes[edge.From()].Index() != (int)NodeType.invalid_node_index))
+        if ((m_Nodes[edge.To()].Index() != (int)Nodetype.invalid_node_index) && (m_Nodes[edge.From()].Index() != (int)Nodetype.invalid_node_index))
         {
             //add the edge, first making sure it is unique
             if (UniqueEdge(edge.From(), edge.To()))
@@ -160,7 +195,8 @@ public class SparseGraph : MonoBehaviour
                 //check to make sure the edge is unique before adding
                 if (UniqueEdge(edge.To(), edge.From()))
                 {
-                    GraphEdge NewEdge = edge;
+                    //GraphEdge NewEdge = edge;
+                    GraphEdge NewEdge = new GraphEdge(edge.From(), edge.To(), edge.Cost());
 
                     NewEdge.SetTo(edge.From());
                     NewEdge.SetFrom(edge.To());
@@ -200,7 +236,7 @@ public class SparseGraph : MonoBehaviour
     }
 
     //returns the number of active + inactive nodes present in the graph
-    public int NumNodes() { return m_Nodes.Count; }
+    public override int NumNodes() { return m_Nodes.Count; }
     //returns the number of active nodes present in the graph
     public int NumActiveNodes()
     {
@@ -208,7 +244,7 @@ public class SparseGraph : MonoBehaviour
 
         for (int n = 0; n < m_Nodes.Count; ++n)
         {
-            if (m_Nodes[n].Index() != (int)NodeType.invalid_node_index) ++count;
+            if (m_Nodes[n].Index() != (int)Nodetype.invalid_node_index) ++count;
         }
 
         return count;
@@ -232,7 +268,7 @@ public class SparseGraph : MonoBehaviour
     //returns true if a node with the given index is present in the graph
     public bool isPresent(int nd)
     {
-        if ((m_Nodes[nd].Index() == (int)NodeType.invalid_node_index) || (nd >= m_Nodes.Count))
+        if ((m_Nodes[nd].Index() == (int)Nodetype.invalid_node_index) || (nd >= m_Nodes.Count))
         {
             return false;
         }

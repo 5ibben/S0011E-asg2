@@ -1,9 +1,12 @@
+#define invalid_node_index
 using UnityEngine;
 
-enum NodeType
+
+public class Nodetype
 {
-    invalid_node_index = -1
+    public const int invalid_node_index = -1;
 }
+
 
 public class GraphNode : MonoBehaviour
 {
@@ -13,7 +16,7 @@ public class GraphNode : MonoBehaviour
     //constructors
     public GraphNode()
     {
-        m_iIndex = (int)NodeType.invalid_node_index;
+        m_iIndex = (int)Nodetype.invalid_node_index;
     }
     public GraphNode(int idx)
     {
@@ -24,6 +27,24 @@ public class GraphNode : MonoBehaviour
 
     public int Index(){return m_iIndex;}
     public void SetIndex(int NewIndex) { m_iIndex = NewIndex; }
+}
+
+public class GraphNode_Demo : GraphNode
+{
+    //constructors
+    public GraphNode_Demo()
+    {
+        m_iIndex = (int)Nodetype.invalid_node_index;
+    }
+    public GraphNode_Demo(int idx, Vector2 position)
+    {
+        m_iIndex = idx;
+        pos = position;
+    }
+
+    public Vector2 GetPos() { return pos; }
+    public void SetPos(Vector2 pos) { this.pos = pos; }
+    Vector2 pos;
 }
 
 public class GraphEdge : MonoBehaviour
@@ -52,8 +73,8 @@ public class GraphEdge : MonoBehaviour
     public GraphEdge()
     {
         m_dCost = 1.0f;
-        m_iFrom = (int)NodeType.invalid_node_index;
-        m_iTo = (int)NodeType.invalid_node_index; ;
+        m_iFrom = (int)Nodetype.invalid_node_index;
+        m_iTo = (int)Nodetype.invalid_node_index; ;
     }
     
     public virtual void dummy() { }
