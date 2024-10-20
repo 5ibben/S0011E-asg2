@@ -12,7 +12,7 @@ public class Clock : MonoBehaviour
         {
             if (instance == null)
             {
-                instance = new GameObject().AddComponent<Clock>();
+                instance = new GameObject("Clock").AddComponent<Clock>();
             }
             return instance;
         }

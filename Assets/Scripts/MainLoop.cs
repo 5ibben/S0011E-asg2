@@ -1,67 +1,59 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
-//public class TestNode : GraphNode
-//{
-//    public TestNode(int index, Vector2 pos)
-//    {
-//        m_iIndex = index;
-//        this.pos = pos;
-//    }
+public class DEMO_PickUp2 : DEMO_PickUp
+{
 
-//    public Vector2 GetPos() { return pos; }
-//    public void SetPos(Vector2 pos) { this.pos = pos; }
-//    Vector2 pos;
-//}
-
-
-
+}
 
 public class MainLoop : MonoBehaviour
 {
-    int gridWidth = 10;
-    int gridHeight = 10;
+    public Button paintButton;
+    //int gridWidth = 10;
+    //int gridHeight = 10;
     public TextAsset textMap;
     public GameObject nodeGO;
     public GameObject edgeGO;
     public GameObject pathNodeGO;
     public GameObject pathEdgeGO;
 
-    SparseGraph graph;
+    List<GameObject> characters = new List<GameObject>();
+    GameObject selectedCharacter;
 
     int searchFrom = 0;
     int searchTo = 0;
 
+    bool paintPickups = false;
+    int previousPaintTile = -1;
 
-    void RemoveTest()
-    {
-        List<GraphEdge> myList = new List<GraphEdge>();
-
-        for (int i = 0; i < 10; i++)
-        {
-            myList.Add(new GraphEdge(i, i + 1));
-        }
-
-        foreach (GraphEdge edge in myList.ToArray())
-        {
-            if (edge.From() % 2 == 0)
-            {
-                myList.Remove(edge);
-            }
-        }
-
-    }
 
     // Start is called before the first frame update
     void Start()
     {
-        //RemoveTest();
+        GraphNode n0 = new GraphNode();
+        DEMO_PickUp dp0 = new DEMO_PickUp();
+        DEMO_PickUp2 dp1 = new DEMO_PickUp2();
 
-        //GraphTestCreate();
-        GraphTestLoad();
-        GraphTestDrawNodes();
-        PQTest();
+        Debug.Log("n0.GetType() == dp0.GetType()" + (n0.GetType() == dp0.GetType()));
+        Debug.Log("dp1.GetType() == dp0.GetType()" + (dp1.GetType() == dp0.GetType()));
+
+        for (int i = 0; i < 9; i++)
+        {
+            Debug.Log("i : i % 2 " + i + ":" + i % 2);
+        }
+
+        //load map
+        if (textMap)
+        {
+            DEMO_Map.LoadGridMap(textMap, true, true, true);
+        }
+
+        //spawn characters
+        characters.Add(Instantiate(Config.Instance.player, DEMO_Map.GetSpawnPoints()[0], Quaternion.identity));
+        //select character
+        selectedCharacter = characters[0];
     }
 
     // Update is called once per frame
@@ -83,227 +75,98 @@ public class MainLoop : MonoBehaviour
             Clock.Instance.UpdateElapsedTime();
         }
 
-        UpdateUI();
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    Vector3 gridWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0.5f, 0.5f, 0);
+        //    if (paintPickups)
+        //    {
+        //        PaintPickups(gridWorldPos);
+        //    }
+        //    else
+        //    {
+        //        PaintWalls(gridWorldPos);
+        //    }
 
-        if (Input.GetMouseButtonDown(0))
+        //}
+        if (Input.GetMouseButton(0))
         {
-            Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            pos.z = 0;
-
-            Debug.Log("worldPos: " + pos + " nodeIndex: " +  PositionToNodeIndex(pos));
-            int nodeIndex = PositionToNodeIndex(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-            GameObject go = Instantiate(nodeGO, pos, new Quaternion());
-            go.GetComponentInChildren<TextMeshProUGUI>().text = nodeIndex.ToString();
-            go.transform.localScale = new Vector3(30, 30, 1);
-            //nodeGO.AddComponent<SpriteRenderer>().sprite = nodeSprite;
-            go.GetComponent<SpriteRenderer>().color = Color.green;
-
-            searchFrom = PositionToNodeIndex(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            Vector3 gridWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0.5f, 0.5f, 0);
+            int paintTile = DEMO_Map.GetTileIndexSafe(gridWorldPos);
+            if (paintTile != previousPaintTile)
+            {
+                previousPaintTile = paintTile;
+                if (paintPickups)
+                {
+                    PaintPickups(gridWorldPos);
+                }
+                else
+                {
+                    PaintWalls(gridWorldPos);
+                }
+            }
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            previousPaintTile = -1;
         }
         if (Input.GetMouseButtonDown(1))
         {
-            searchTo= PositionToNodeIndex(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-            //GraphTestSearchFDS(searchFrom, searchTo);
-            GraphTestSearchAdvanced(searchFrom, searchTo);
+            //Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //DEMO_Map.DoWallsIntersectCircle(selectedCharacter.transform.position, worldPos, 0.1f);
+
+            Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            selectedCharacter.GetComponent<DEMO_Character>().MoveCharacter(worldPos);
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            selectedCharacter.GetComponent<DEMO_Character>().FindItem(new DEMO_PickUp());
         }
     }
 
-    void UpdateUI()
+    public void TogglePaintMode()
     {
-
+        paintPickups = !paintPickups;
     }
 
-    int PositionToNodeIndex(Vector3 pos)
+    void PaintWalls(Vector3 worldPos)
     {
-        return ((int)pos.y * gridWidth + (int)pos.x);
-    }
-
-    void GraphTestLoad()
-    {
-        if (textMap)
+        int tile = DEMO_Map.GetTileIndexSafe(worldPos);
+        if (tile != -1)
         {
-            graph = (SparseGraph)Graph_Loader.LoadGridGraph(textMap,true,true);
-            gridWidth = Graph_Loader.MapWidth();
-            gridHeight = Graph_Loader.MapHeight();
-        }
-    }
-
-    void GraphTestCreate()
-    {
-        graph = new SparseGraph(false);
-
-        Vector2 offset = new Vector2(0.5f, 0.5f);
-        //add nodes
-        for (int y = 0; y < gridHeight; y++)
-        {
-            for (int x = 0; x < gridWidth; x++)
+            if (DEMO_Map.GetTileObject(tile).gameObject.name == "floor(Clone)")
             {
-                int nodeIndex = y * gridWidth + x;
-                graph.AddNode(new GraphNode_Demo(nodeIndex, new Vector2(x,y) + offset));
+                //remove potential worldobject
+                DEMO_Map.RemoveWorldObject(tile);
+                //Add wall
+                DEMO_Map.AddTileObject('X', tile);
             }
-        }
-        //add horizontal edges
-        for (int y = 0; y < gridHeight; y++)
-        {
-            for (int x = 0; x < gridWidth - 1; x++)
+            else if (DEMO_Map.GetTileObject(tile).gameObject.name == "wall(Clone)")
             {
-                int from = y * gridWidth + x;
-                int to = from + 1;
-                graph.AddEdge(new GraphEdge(from, to));
-            }
-        }
-        //add vertical edges
-        for (int x = 0; x < gridWidth; x++)
-        {
-            for (int y = 0; y < gridHeight - 1; y++)
-            {
-                int from = y * gridWidth + x;
-                int to = from + gridWidth;
-                graph.AddEdge(new GraphEdge(from, to));
+                DEMO_Map.AddTileObject('0', tile);
             }
         }
     }
 
-    public void GraphTestDrawNodes()
+    void PaintPickups(Vector3 worldPos)
     {
-         
-        List<GraphNode> nodes = graph.GetNodes();
-
-        //GameObject nodeGO = new GameObject("node");
-        nodeGO.GetComponent<SpriteRenderer>().color = Color.cyan;
-
-        foreach (GraphNode_Demo node in nodes)
+        int tile = DEMO_Map.GetTileIndexSafe(worldPos);
+        if (tile != -1)
         {
-            if (node.Index() != (int)Nodetype.invalid_node_index)
+            if (DEMO_Map.GetTileObject(tile).gameObject.name == "floor(Clone)")
             {
-                GameObject go = Instantiate(nodeGO, node.GetPos(), new Quaternion());
-                go.GetComponent<SpriteRenderer>().renderingLayerMask = 2;
-                go.GetComponentInChildren<TextMeshProUGUI>().text = node.Index().ToString();
+                if (DEMO_Map.GetWorldObject(tile) is null)
+                {
+                    DEMO_Map.AddWorldObject(Config.GetTextMapWorldObject('G'), tile);
+                }
+                else
+                {
+                    DEMO_Map.RemoveWorldObject(tile);
+                }
             }
-        }
-
-        List<List<GraphEdge>> edges = graph.GetEdges();
-
-        //GameObject edgeGO = new GameObject("edge");
-        //edgeGO.AddComponent<LineRenderer>();
-        //edgeGO.GetComponent<LineRenderer>().SetWidth(0.2f, 0.0f);
-        //edgeGO.GetComponent<LineRenderer>().material = edgeMaterial;
-        foreach (List<GraphEdge> edgeList in edges)
-        {
-            foreach (GraphEdge edge in edgeList)
+            else if (DEMO_Map.GetTileObject(tile).gameObject.name == "wall(Clone)")
             {
-                GraphNode_Demo fromNode = (GraphNode_Demo)nodes[edge.From()];
-                GraphNode_Demo toNode = (GraphNode_Demo)nodes[edge.To()];
-                //Vector3[] linePoints = { fromNode.GetPos(), toNode.GetPos() };
-                //edgeGO.GetComponent<LineRenderer>().SetPositions(linePoints);
-                //edgeGO.GetComponentInChildren<TextMeshProUGUI>().text = node.Index().ToString();
-                GameObject go = Instantiate(edgeGO);
-                //go.GetComponent<LineRenderer>().sortingOrder = 2;
-                go.GetComponent<VisualEdge>().Initialize(fromNode, toNode, Color.green);
-            }
-        }
-    }
-
-    void PQTest()
-    {
-        List<double> costs = new List<double> { 0, 0, 0, 0, 0, 0 };
-        List<int> indexes = new List<int> { 0, 1, 2, 3, 4, 5 };
-        costs[2] = 69;
-        costs[4] = 7;
-        costs[5] = 70;
-        IndexedPriorityQueueLow pq = new IndexedPriorityQueueLow(costs, 6);
-
-        //costs[2] = 69;
-        pq.insert(2);
-        //costs[4] = 7;
-        pq.insert(4);
-        //costs[5] = 70;
-        pq.insert(5);
-
-        costs[2] = 2;
-        pq.ChangePriority(2);
-        costs[4] = 3;
-        pq.ChangePriority(4);
-        costs[5] = 1;
-        pq.ChangePriority(5);
-
-        for (int i = 0; i < 3; i++)
-        {
-            Debug.Log("PQ POP: " + pq.Pop());
-        }
-    }
-
-    void GraphTestSearchAdvanced(int from, int to)
-    {
-        //Graph_SearchDijkstra search = new Graph_SearchDijkstra(graph, from, to);
-        Graph_SearchAStar search = new Graph_SearchAStar(graph, new AStarHeuristic_Euclid(), from, to);
-        List<int> path = search.GetPathToTarget();
-
-        Debug.Log("path.Count: " + path.Count);
-        if (0 <path.Count)
-        {
-            List<GraphNode> nodes = graph.GetNodes();
-
-            //visualize edges
-            GameObject edgeGO = new GameObject("edge");
-            edgeGO.AddComponent<LineRenderer>();
-            edgeGO.GetComponent<LineRenderer>().SetWidth(0.02f, 0.02f);
-            //edgeGO.GetComponent<LineRenderer>().material = edgeMaterial;
-            edgeGO.GetComponent<LineRenderer>().material.color = new Color(0, 255, 0, 255);
-            for (int i = 0; i < path.Count - 1; i++)
-            {
-                GraphNode_Demo fromNode = ((GraphNode_Demo)nodes[path[i]]);
-                GraphNode_Demo toNode = ((GraphNode_Demo)nodes[path[i + 1]]);
-                Vector3[] linePoints = { fromNode.GetPos(), toNode.GetPos() };
-                edgeGO.GetComponent<LineRenderer>().SetPositions(linePoints);
-                edgeGO.GetComponent<LineRenderer>().sortingOrder = 1;
-                Instantiate(edgeGO);
-            }
-
-            foreach (int nodeIndex in path)
-            {
-                pathNodeGO.GetComponentInChildren<TextMeshProUGUI>().text = nodes[nodeIndex].Index().ToString();
-                Instantiate(pathNodeGO, ((GraphNode_Demo)nodes[nodeIndex]).GetPos(), new Quaternion());
-            }
-        }
-        else
-        {
-            Debug.Log("no path found");
-        }
-    }
-
-
-    void GraphTestSearchFDS(int from, int to)
-    {
-        //Graph_SearchDFS search = new Graph_SearchDFS(graph, from, to);
-        Graph_SearchBFS search = new Graph_SearchBFS(graph, from, to);
-        
-        if (search.Found())
-        {
-            List<int> path = search.GetPathToTarget();
-
-            List<GraphNode> nodes = graph.GetNodes();
-
-            //visualize edges
-            GameObject edgeGO = new GameObject("edge");
-            edgeGO.AddComponent<LineRenderer>();
-            edgeGO.GetComponent<LineRenderer>().SetWidth(0.02f, 0.02f);
-            //edgeGO.GetComponent<LineRenderer>().material = edgeMaterial;
-            edgeGO.GetComponent<LineRenderer>().material.color = new Color(0, 255, 0, 255);
-            for (int i = 0; i < path.Count-1; i++)
-            {
-                GraphNode_Demo fromNode = ((GraphNode_Demo)nodes[path[i]]);
-                GraphNode_Demo toNode = ((GraphNode_Demo)nodes[path[i+1]]);
-                Vector3[] linePoints = { fromNode.GetPos(), toNode.GetPos() };
-                edgeGO.GetComponent<LineRenderer>().SetPositions(linePoints);
-                edgeGO.GetComponent<LineRenderer>().sortingOrder = 1;
-                Instantiate(edgeGO);
-            }
-
-            foreach (int nodeIndex in path)
-            {
-                pathNodeGO.GetComponentInChildren<TextMeshProUGUI>().text = nodes[nodeIndex].Index().ToString();
-                Instantiate(pathNodeGO, ((GraphNode_Demo)nodes[nodeIndex]).GetPos(), new Quaternion());
+                DEMO_Map.AddTileObject('0', tile);
+                DEMO_Map.AddWorldObject(Config.GetTextMapWorldObject('G'), tile);
             }
         }
     }

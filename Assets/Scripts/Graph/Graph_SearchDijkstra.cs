@@ -25,6 +25,7 @@ public class Graph_SearchDijkstra : MonoBehaviour
 
     int m_iSource;
     int m_iTarget;
+    Graph_Serach_Termination_Condition termination_Condition;
 
     void Search()
     {
@@ -49,7 +50,14 @@ public class Graph_SearchDijkstra : MonoBehaviour
             m_ShortestPathTree[NextClosestNode] = m_SearchFrontier[NextClosestNode];
 
             //if the target has been found exit
-            if (NextClosestNode == m_iTarget) return;
+            //if (NextClosestNode == m_iTarget) return;
+            if (termination_Condition.isSatisfied(m_Graph, NextClosestNode))
+            {
+                Debug.Log("termination condition satis0fied by node: " + NextClosestNode);
+                m_iTarget = NextClosestNode;
+                return;
+            }
+           
 
             //now to relax the edges.
             //for each edge connected to the next closest node
@@ -90,11 +98,12 @@ public class Graph_SearchDijkstra : MonoBehaviour
             }
         }
     }
-    public Graph_SearchDijkstra(SparseGraph graph, int source, int target = -1)
+    public Graph_SearchDijkstra(SparseGraph graph, int source, Graph_Serach_Termination_Condition termination)
     {
         m_Graph = graph;
         m_iSource = source;
-        m_iTarget = target;
+        m_iTarget = -1;
+        termination_Condition = termination;
         m_ShortestPathTree = new List<GraphEdge>(m_Graph.NumNodes());
         m_SearchFrontier = new List<GraphEdge>(m_Graph.NumNodes());
         m_CostToThisNode = new List<double>(m_Graph.NumNodes());
@@ -139,7 +148,7 @@ public class Graph_SearchDijkstra : MonoBehaviour
         //    }
         //}
 
-        Debug.Log("m_ShortestPathTree.count: " + m_ShortestPathTree.Count);
+        //Debug.Log("m_ShortestPathTree.count: " + m_ShortestPathTree.Count);
         List<int> path = new List<int>();
 
         //just return an empty path if no target or no path found
@@ -149,8 +158,8 @@ public class Graph_SearchDijkstra : MonoBehaviour
 
         path.Add(nd);
 
-        Debug.Log("(nd != m_iSource): " + (nd != m_iSource));
-        Debug.Log("(m_ShortestPathTree[nd] !is null): " + !(m_ShortestPathTree[nd] is null));
+        //Debug.Log("(nd != m_iSource): " + (nd != m_iSource));
+        //Debug.Log("(m_ShortestPathTree[nd] !is null): " + !(m_ShortestPathTree[nd] is null));
         while ((nd != m_iSource) && !(m_ShortestPathTree[nd] is null))
         {
             nd = m_ShortestPathTree[nd].From();

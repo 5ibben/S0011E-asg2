@@ -135,6 +135,10 @@ public class SparseGraph : Graph
     {
         Debug.Assert(node < (int)m_Nodes.Count, "<SparseGraph::RemoveNode>: invalid node index");
 
+        if (m_Nodes[node].Index() == ((int)Nodetype.invalid_node_index))
+        {
+            return;
+        }
         //set this node's index to invalid_node_index
         m_Nodes[node].SetIndex((int)Nodetype.invalid_node_index);
 

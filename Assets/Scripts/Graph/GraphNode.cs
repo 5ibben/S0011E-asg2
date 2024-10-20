@@ -35,16 +35,26 @@ public class GraphNode_Demo : GraphNode
     public GraphNode_Demo()
     {
         m_iIndex = (int)Nodetype.invalid_node_index;
+        connectedItem = null;
     }
-    public GraphNode_Demo(int idx, Vector2 position)
+    public GraphNode_Demo(int idx, int nodeCost, Vector2 position)
     {
         m_iIndex = idx;
+        cost = nodeCost;
         pos = position;
+        connectedItem = null;
     }
 
+    public int GetCost() { return cost; }
+    public void SetCost(int nodeCost) { cost = nodeCost; }
     public Vector2 GetPos() { return pos; }
     public void SetPos(Vector2 pos) { this.pos = pos; }
+    public GameObject GetItem() { return connectedItem; }
+    public void SetItem(GameObject go) { connectedItem = go; }
+
+    int cost;
     Vector2 pos;
+    GameObject connectedItem;
 }
 
 public class GraphEdge : MonoBehaviour
