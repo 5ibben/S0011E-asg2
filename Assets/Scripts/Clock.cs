@@ -91,7 +91,7 @@ public class Clock : MonoBehaviour
     int elapsedTime = 0;
     //'time scale' or 'ticks per second'
     int timeScale = 1;
-    int updatesPerSecond = 1;
+    int updatesPerSecond = 4;
     bool is_paused = false;
     float accumulator = 0;
 }

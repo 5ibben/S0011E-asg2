@@ -1,19 +1,12 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
-public class Graph_SearchBFS : MonoBehaviour
+public class Graph_SearchBFS
 {
-    //to aid legibility
     enum NodeStatus { visited, unvisited, no_parent_assigned };
-    //create typedefs for the edge and node types used by the graph
-    //typedef typename graph_type::EdgeType Edge;
-    //typedef typename graph_type::NodeType Node;
 
     //a reference to the graph to be searched
     SparseGraph m_Graph;
-    //this records the indexes of all the nodes that are visited as the
-    //search progresses
+    //this records the indexes of all the nodes that are visited as the search progresses
     List<int> m_Visited;
 
     //this holds the route taken to the target.
@@ -27,7 +20,6 @@ public class Graph_SearchBFS : MonoBehaviour
     //the source and target node indices
     int m_iSource;
     int m_iTarget;
-
 
     //true if a path to the target has been found
     bool m_bFound;
@@ -55,18 +47,13 @@ public class Graph_SearchBFS : MonoBehaviour
                 m_SpanningTree.Add(Next);
             }
 
-            ////and mark it visited
-            //m_Visited[Next.To()] = (int)NodeStatus.visited;
-
             //if the target has been found the method can return success
             if (Next.To() == m_iTarget)
             {
                 return true;
             }
 
-            //push the edges leading from the node this edge points to onto
-            //the stack (provided the edge does not point to a previously
-            //visited node)
+            //push the edges leading from the node this edge points to onto the stack (provided the edge does not point to a previously visited node)
             foreach (GraphEdge edge in m_Graph.GetNodeEdges(Next.To()))
             {
                 if (m_Visited[edge.To()] == (int)NodeStatus.unvisited)
@@ -105,13 +92,10 @@ public class Graph_SearchBFS : MonoBehaviour
     //returns a vector containing pointers to all the edges the search has examined
     public List<GraphEdge> GetSearchTree(){return m_SpanningTree;}
 
-    //returns a vector of node indexes that comprise the shortest path
-    //from the source to the target
+    //returns a vector of node indexes that comprise the shortest path from the source to the target
     public List<int> GetPathToTarget()
-    //public LinkedList<int> GetPathToTarget()
     {
         List<int> path = new List<int>();
-        //LinkedList<int> path = new LinkedList<int>();
 
         //just return an empty path if no path to target found or if
         //no target has been specified
@@ -120,14 +104,12 @@ public class Graph_SearchBFS : MonoBehaviour
         int nd = m_iTarget;
 
         path.Add(nd);
-        //path.AddFirst(nd);
 
         while (nd != m_iSource)
         {
             nd = m_Route[nd];
 
             path.Add(nd);
-            //path.AddFirst(nd);
         }
 
         return path;

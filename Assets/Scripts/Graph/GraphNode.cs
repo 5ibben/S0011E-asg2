@@ -1,14 +1,11 @@
-#define invalid_node_index
 using UnityEngine;
-
 
 public class Nodetype
 {
     public const int invalid_node_index = -1;
 }
 
-
-public class GraphNode : MonoBehaviour
+public class GraphNode
 {
     //every node has an index. A valid index is >= 0
     protected int m_iIndex;
@@ -57,7 +54,7 @@ public class GraphNode_Demo : GraphNode
     GameObject connectedItem;
 }
 
-public class GraphEdge : MonoBehaviour
+public class GraphEdge
 {
     //An edge connects two nodes. Valid node indices are always positive.
     int m_iFrom;
@@ -96,3 +93,35 @@ public class GraphEdge : MonoBehaviour
     public double Cost() { return m_dCost; }
     public void SetCost(double NewCost) { m_dCost = NewCost; }
 }
+
+public class NavGraphEdge : GraphEdge
+{
+    //examples of typical flags
+    public enum behaviors
+    {
+    normal = 0,
+    swim = 1 << 0,
+    crawl = 1 << 1,
+    creep = 1 << 3,
+    jump = 1 << 3,
+    fly = 1 << 4,
+    grapple = 1 << 5,
+    goes_through_door = 1 << 6
+    };
+
+  int m_iFlags;
+
+    //if this edge intersects with an object (such as a door or lift), then this is that object's ID. 
+    int m_iIDofIntersectingEntity;
+
+    public NavGraphEdge(int from, int to, double cost, int flags = 0, int id = -1):base(from, to, cost)
+    {
+        m_iFlags = flags;
+        m_iIDofIntersectingEntity = id;
+    }
+    public int Flags(){return m_iFlags;}
+    public void SetFlags(int flags) { m_iFlags = flags; }
+
+    public int IDofIntersectingEntity(){return m_iIDofIntersectingEntity;}
+    public void SetIDofIntersectingEntity(int id) { m_iIDofIntersectingEntity = id; }
+};

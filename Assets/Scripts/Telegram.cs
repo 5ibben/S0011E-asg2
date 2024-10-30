@@ -1,11 +1,54 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ExtraInfo
+enum messages
 {
-
+    Msg_Blank,
+    Msg_PathReady,
+    Msg_NoPathAvailable,
+    Msg_GraphChanged,
+    Msg_GraphItemChanged,
+    Msg_Character_MoveToPosition,
+    Msg_Character_FindItem,
 }
+
+public abstract class ExtraInfo
+{
+}
+
+public class ExtraInfo_GraphChanged : ExtraInfo
+{
+    public ExtraInfo_GraphChanged(int node)
+    {
+        affectedNode = node;
+    }
+    public int affectedNode;
+}
+public class ExtraInfo_GraphItemChanged : ExtraInfo
+{
+    public ExtraInfo_GraphItemChanged(int node)
+    {
+        affectedNode = node;
+    }
+    public int affectedNode;
+}
+
+public class ExtraInfo_Character_MoveToPosition : ExtraInfo
+{
+    public ExtraInfo_Character_MoveToPosition(Vector2 pos)
+    {
+        this.position = pos;
+    }
+    public Vector2 position;
+}
+public class ExtraInfo_Character_FindItem : ExtraInfo
+{
+    public ExtraInfo_Character_FindItem(int item)
+    {
+        this.item = item;
+    }
+    public int item;
+}
+
 
 public class Telegram
 {

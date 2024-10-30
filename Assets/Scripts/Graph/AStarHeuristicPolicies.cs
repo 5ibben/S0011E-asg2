@@ -1,15 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class AStarHeuristic : MonoBehaviour
+public abstract class AStarHeuristic
 {
     public abstract double Calculate(Graph G, int nd1, int nd2);
 }
 
-//-----------------------------------------------------------------------------
-//the euclidian heuristic (straight-line distance)
-//-----------------------------------------------------------------------------
 class AStarHeuristic_Euclid : AStarHeuristic
 {
     public AStarHeuristic_Euclid() { }
@@ -18,7 +13,6 @@ class AStarHeuristic_Euclid : AStarHeuristic
     public override double Calculate(Graph G, int nd1, int nd2)
     {
         return (((GraphNode_Demo)((SparseGraph)G).GetNode(nd1)).GetPos() - ((GraphNode_Demo)((SparseGraph)G).GetNode(nd2)).GetPos()).magnitude;
-        //return Vec2DDistance(G.GetNode(nd1).Pos(), G.GetNode(nd2).Pos());
     }
 };
 
@@ -36,7 +30,6 @@ class AStarHeuristic_Noisy_Euclidian : AStarHeuristic
     public override double Calculate(Graph G, int nd1, int nd2)
     {
         return (((GraphNode_Demo)((SparseGraph)G).GetNode(nd1)).GetPos() - ((GraphNode_Demo)((SparseGraph)G).GetNode(nd2)).GetPos()).magnitude * Random.Range(0.9f, 1.1f);
-        //return Vec2DDistance(G.GetNode(nd1).Pos(), G.GetNode(nd2).Pos()) * RandInRange(0.9f, 1.1f);
     }
 };
 

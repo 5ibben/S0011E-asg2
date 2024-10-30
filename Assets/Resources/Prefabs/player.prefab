@@ -73,8 +73,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 13
-  m_Sprite: {fileID: 21300000, guid: f80e504e8aa74e9408a948c16b59c64c, type: 3}
+  m_SortingOrder: 20
+  m_Sprite: {fileID: 21300000, guid: b21baed98d2c9c14a9f57e98ef063ef5, type: 3}
   m_Color: {r: 0, g: 1, b: 0.03731489, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -157,7 +157,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 14
+  m_SortingOrder: 21
   m_Sprite: {fileID: 21300000, guid: 84fd4e41bd994ae429d6bbc851ce8b2c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -219,6 +219,9 @@ MonoBehaviour:
   name: 
   pathMarker: {fileID: 1986815377259865700, guid: 8a160ada41834e444990989ce10012c2, type: 3}
   movementSpeed: 3
+  currentItemSearch: 0
+  moveDestination: {x: 0, y: 0}
+  is_moving: 0
 --- !u!58 &3070314238271922063
 CircleCollider2D:
   m_ObjectHideFlags: 0

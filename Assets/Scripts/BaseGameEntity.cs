@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class BaseGameEntity : MonoBehaviour
 {
-    public string name = "";
+    new public string name = "";
     //every entity must have a unique identifying number
     private int m_ID;
 
@@ -23,13 +23,8 @@ public class BaseGameEntity : MonoBehaviour
     }
     private void SetID(int val)
     {
-        ////make sure the val is equal to or greater than the next available ID
-        //assert((val >= m_iNextValidID) && "<BaseGameEntity::SetID>: invalid ID");
-
         m_ID = val;
-
         m_iNextValidID = m_ID + 1;
-        Debug.Log("m_iNextValidID is now: " + m_iNextValidID);
     }
 
     public void SetAutomaticID()
@@ -37,8 +32,8 @@ public class BaseGameEntity : MonoBehaviour
         SetID(m_iNextValidID);
     }
 
-    //virtual ~BaseGameEntity() { }
-
+    public virtual void EntityStart() { }
+    public virtual void EntityDestroy() { }
     //all entities must implement an update function
     public virtual void EntityUpdate() { }
 

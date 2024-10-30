@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Graph_SearchDijkstra : MonoBehaviour
+public class Graph_SearchDijkstra
 {
     SparseGraph m_Graph;
 
@@ -50,7 +49,6 @@ public class Graph_SearchDijkstra : MonoBehaviour
             m_ShortestPathTree[NextClosestNode] = m_SearchFrontier[NextClosestNode];
 
             //if the target has been found exit
-            //if (NextClosestNode == m_iTarget) return;
             if (termination_Condition.isSatisfied(m_Graph, NextClosestNode))
             {
                 Debug.Log("termination condition satis0fied by node: " + NextClosestNode);
@@ -135,20 +133,6 @@ public class Graph_SearchDijkstra : MonoBehaviour
     //supposed to be linked list
     public List<int> GetPathToTarget() 
     {
-
-        //for (int i = 0; i < m_SearchFrontier.Count; i++)
-        //{
-        //    if (m_SearchFrontier[i] == null)
-        //    {
-        //        Debug.Log("edge " + i + " is null");
-        //    }
-        //    else
-        //    {
-        //        Debug.Log("edge " + i + " exists");
-        //    }
-        //}
-
-        //Debug.Log("m_ShortestPathTree.count: " + m_ShortestPathTree.Count);
         List<int> path = new List<int>();
 
         //just return an empty path if no target or no path found
@@ -158,8 +142,6 @@ public class Graph_SearchDijkstra : MonoBehaviour
 
         path.Add(nd);
 
-        //Debug.Log("(nd != m_iSource): " + (nd != m_iSource));
-        //Debug.Log("(m_ShortestPathTree[nd] !is null): " + !(m_ShortestPathTree[nd] is null));
         while ((nd != m_iSource) && !(m_ShortestPathTree[nd] is null))
         {
             nd = m_ShortestPathTree[nd].From();

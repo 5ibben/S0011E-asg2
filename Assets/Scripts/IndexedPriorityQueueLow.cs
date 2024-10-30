@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IndexedPriorityQueueLow : MonoBehaviour
+public class IndexedPriorityQueueLow// : MonoBehaviour
 {
 
     List<double>  m_vecKeys;
@@ -74,8 +74,6 @@ public class IndexedPriorityQueueLow : MonoBehaviour
         m_iMaxSize = MaxSize;
         m_iSize = 0;
         m_Heap = new List<int>(MaxSize + 1);
-        Debug.Log("MaxSize: " + MaxSize);
-        Debug.Log("m_Heap.Count: " + m_Heap.Capacity);
         for (int i = 0; i < m_Heap.Capacity; i++)
         {
             m_Heap.Add(0);

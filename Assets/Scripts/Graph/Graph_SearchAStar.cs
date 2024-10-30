@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Graph_SearchAStar : MonoBehaviour
+public class Graph_SearchAStar// : MonoBehaviour
 {
     SparseGraph m_Graph;
     AStarHeuristic m_Heuristic;

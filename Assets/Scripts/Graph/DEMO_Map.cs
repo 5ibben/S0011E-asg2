@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -20,39 +19,35 @@ public class DEMO_Map : MonoBehaviour
         }
     }
 
-    static GameObject tileObjectContainer;
-    static GameObject worldObjectContainer;
+    //graph visuals
     static GameObject nodeObjectContainer;
     static GameObject edgeObjectContainer;
-
-    static bool include_diagonals = true;
-    static bool cullCornerCutters = true;
-
-    static string mapstring = new string("");
-    static int mapWidth = 0;
-    static int mapHeight = 0;
-    static SparseGraph graph;
-
+    static List<GameObject> nodeObjects = new List<GameObject>();
+    static List<List<GameObject>> edgeObjects = new List<List<GameObject>>();
+    //map stuff
+    static GameObject tileObjectContainer;
+    static GameObject worldObjectContainer;
     static List<GameObject> tileObjects = new List<GameObject>();
     static List<GameObject> worldObjects = new List<GameObject>();
     static List<Vector2> spawnPoints = new List<Vector2>();
 
-    static bool visualizeGraph = false;
-    static List<GameObject> nodeObjects = new List<GameObject>();
-    static List<List<GameObject>> edgeObjects = new List<List<GameObject>>();
+    static SparseGraph graph;
+    static string mapstring = new string("");
+    static int mapWidth = 0;
+    static int mapHeight = 0;
 
-    //the size of the search radius the cellspace partition uses when looking for 
-    //neighbors 
-    static double m_dCellSpaceNeighborhoodRange;
+    static bool include_diagonals = true;
+    static bool cullCornerCutters = true;
 
-    public static double GetCellSpaceNeighborhoodRange(){return m_dCellSpaceNeighborhoodRange;}
+    public static int assignmentSourceNode;
+    public static int assignmentTargetNode;
 
     public static SparseGraph Graph() { return graph; }
     public static int MapWidth() { return mapWidth; }
     public static int MapHeight() { return mapHeight; }
     public static string MapString() { return mapstring; }
 
-    static string  FormatMap(TextAsset map, bool flipX, bool flipY)
+    static string  FormatMap(TextAsset map)
     {
         //calculate map dimensions
         string mapstring = map.ToString();
@@ -69,15 +64,15 @@ public class DEMO_Map : MonoBehaviour
         mapstring = mapstring.Replace("\r", "");
 
         //set orientation
-        if (flipX)
+        if (Config.mapFlipX)
         {
             mapstring = mapFlipXY(mapstring);
-            if (!flipY)
+            if (!Config.mapFlipY)
             {
                 mapstring = mapFlipY(mapstring);
             }
         }
-        else if (flipY)
+        else if (Config.mapFlipY)
         {
             mapstring = mapFlipY(mapstring);
         }
@@ -125,9 +120,12 @@ public class DEMO_Map : MonoBehaviour
                                 horizontalNeighbour = neighbourNode + 1;
                                 verticalNeighbour = nodeIndex - 1;
                             }
-                            if (graph.GetNode(horizontalNeighbour).Index() != (int)Nodetype.invalid_node_index && graph.GetNode(verticalNeighbour).Index() != (int)Nodetype.invalid_node_index)
+                            if (CheckBounds(horizontalNeighbour) && CheckBounds(verticalNeighbour))
                             {
-                                graph.AddEdge(new GraphEdge(nodeIndex, neighbourNode, edgeCost));
+                                if (graph.GetNode(horizontalNeighbour).Index() != (int)Nodetype.invalid_node_index && graph.GetNode(verticalNeighbour).Index() != (int)Nodetype.invalid_node_index)
+                                {
+                                    graph.AddEdge(new GraphEdge(nodeIndex, neighbourNode, edgeCost));
+                                }
                             }
                         }
                         else
@@ -161,10 +159,20 @@ public class DEMO_Map : MonoBehaviour
         return flippedString;
     }
 
+    public static bool CheckBounds(int index)
+    {
+        return (0 <= index && index < mapstring.Length);
+    }
+
+    public static bool CheckBounds(Vector2 tileCoords)
+    {
+        return (0 <= tileCoords.x && tileCoords.x < mapWidth && 0 <= tileCoords.y && tileCoords.y < mapHeight);
+    }
+
     public static int GetTileIndexSafe(Vector2 tileCoords)
     {
         //check bounds
-        if (0 <= tileCoords.x && tileCoords.x < mapWidth && 0 <= tileCoords.y && tileCoords.y < mapHeight)
+        if (CheckBounds(tileCoords))
         {
             return ((int)tileCoords.y * mapWidth + (int)tileCoords.x);
         }
@@ -181,10 +189,23 @@ public class DEMO_Map : MonoBehaviour
         return new Vector2(tileIndex % (mapWidth), tileIndex / (mapWidth));
     }
 
-    public static void LoadGridMap(TextAsset map, bool flipX, bool flipY, bool visualize_Graph)
+    public static void UnLoadGridMap()
     {
-        visualizeGraph = visualize_Graph;
-        mapstring = FormatMap(map, flipX, flipY);
+        Destroy(nodeObjectContainer);
+        Destroy(edgeObjectContainer);
+        Destroy(tileObjectContainer);
+        Destroy(worldObjectContainer);
+        tileObjects.Clear();
+        worldObjects.Clear();
+        spawnPoints.Clear();
+        nodeObjects.Clear();
+        edgeObjects.Clear();
+        spawnPoints.Clear();
+    }
+
+    public static void LoadGridMap(TextAsset map)
+    {
+        mapstring = FormatMap(map);
 
         nodeObjectContainer = new GameObject("nodes");
         edgeObjectContainer = new GameObject("edges");
@@ -193,7 +214,7 @@ public class DEMO_Map : MonoBehaviour
 
         LoadGridGraph();
         LoadGridObjects();
-        VisualizeGraph();
+        GenerateVisuals();
     }
 
     public static List<Vector2> GetSpawnPoints()
@@ -210,7 +231,10 @@ public class DEMO_Map : MonoBehaviour
     {
         return ((GraphNode_Demo)graph.GetNode(tileIndex)).GetItem();
     }
-
+    public static List<GameObject> GetWorldObjects()
+    {
+        return worldObjects;
+    }
     public static void RemoveWorldObject(Vector2 coord)
     {
         RemoveWorldObject(GetTileIndex(coord));
@@ -222,6 +246,7 @@ public class DEMO_Map : MonoBehaviour
         if (!(currentObject is null))
         {
             Destroy(currentObject);
+            ((GraphNode_Demo)graph.GetNode(tileIndex)).SetItem(null);
         }
     }
 
@@ -266,6 +291,7 @@ public class DEMO_Map : MonoBehaviour
         {
             Destroy(tileObjects[tileIndex]);
             tileObjects[tileIndex] = (Instantiate(tileObject, GetTileCoords(tileIndex), Quaternion.identity));
+            tileObjects[tileIndex].transform.SetParent(tileObjectContainer.transform);
             int nodeCost = Config.Instance.GetTextMapTileCost(tile);
             if (nodeCost < 0)
             {
@@ -274,11 +300,17 @@ public class DEMO_Map : MonoBehaviour
                 //recalculate edges of neigbhourhood
                 foreach (int node in GetNodeNeighbourhood(tileIndex))
                 {
-                    graph.GetNodeEdges(node).Clear();
+                    if (node != -1)
+                    {
+                        graph.GetNodeEdges(node).Clear();
+                    }
                 }
                 foreach (int node in GetNodeNeighbourhood(tileIndex))
                 {
-                    GenerateNodeEdges(node);
+                    if (node != -1)
+                    {
+                        GenerateNodeEdges(node);
+                    }
                 }
 
                 //visuals
@@ -292,7 +324,10 @@ public class DEMO_Map : MonoBehaviour
                     graph.AddNode(new GraphNode_Demo(tileIndex, nodeCost, GetTileCoords(tileIndex)));
                     foreach (int node in GetNodeNeighbourhood(tileIndex))
                     {
-                        GenerateNodeEdges(node);
+                        if (node != -1)
+                        {
+                            GenerateNodeEdges(node);
+                        }
                     }
                     //visuals
                     nodeObjects[tileIndex].SetActive(true);
@@ -319,10 +354,12 @@ public class DEMO_Map : MonoBehaviour
                 Debug.Log("worldObject.name: " + worldObject.name);
                 if (worldObject.name == "spawnPoint")
                 {
+                    assignmentSourceNode = tileIndex;
                     spawnPoints.Add(GetTileCoords(tileIndex));
                 }
                 else
                 {
+                    assignmentTargetNode = tileIndex;
                     GameObject go = Instantiate(worldObject, GetTileCoords(tileIndex), Quaternion.identity);
                     worldObjects.Add(go);
                     go.transform.SetParent(worldObjectContainer.transform);
@@ -404,7 +441,7 @@ public class DEMO_Map : MonoBehaviour
             {
                 Vector2 neighbour = nodeCoords + new Vector2(x, y);
                 //check bounds
-                if (0 <= neighbour.x && neighbour.x < mapWidth && 0 <= neighbour.y && neighbour.y < mapHeight)
+                if (CheckBounds(neighbour))
                 {
                     neighbourhood.Add(GetTileIndex(neighbour));
                 }
@@ -417,7 +454,20 @@ public class DEMO_Map : MonoBehaviour
         return neighbourhood;
     }
 
-    static void VisualizeGraph()
+    public static void VisualizeGraph(bool visualize)
+    {
+        nodeObjectContainer.SetActive(visualize);
+        edgeObjectContainer.SetActive(visualize);
+    }
+    public static void VisualizeTiles(bool visualize)
+    {
+        foreach (SpriteRenderer sprite in tileObjectContainer.GetComponentsInChildren<SpriteRenderer>())
+        {
+            sprite.enabled = visualize;
+        }
+    }
+
+    static void GenerateVisuals()
     {
         List<GraphNode> nodes = graph.GetNodes();
 
