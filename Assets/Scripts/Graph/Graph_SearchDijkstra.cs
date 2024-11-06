@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 public class Graph_SearchDijkstra
 {
@@ -49,13 +48,17 @@ public class Graph_SearchDijkstra
             m_ShortestPathTree[NextClosestNode] = m_SearchFrontier[NextClosestNode];
 
             //if the target has been found exit
-            if (termination_Condition.isSatisfied(m_Graph, NextClosestNode))
+            if (NextClosestNode == m_iTarget)
             {
-                Debug.Log("termination condition satis0fied by node: " + NextClosestNode);
-                m_iTarget = NextClosestNode;
                 return;
             }
-           
+            //if (termination_Condition.isSatisfied(m_Graph, NextClosestNode))
+            //{
+            //    //Debug.Log("termination condition satis0fied by node: " + NextClosestNode);
+            //    m_iTarget = NextClosestNode;
+            //    return;
+            //}
+
 
             //now to relax the edges.
             //for each edge connected to the next closest node
@@ -108,16 +111,26 @@ public class Graph_SearchDijkstra
         for (int i = 0; i < m_Graph.NumNodes(); i++)
         {
             m_ShortestPathTree.Add(null);
-        }
-        for (int i = 0; i < m_Graph.NumNodes(); i++)
-        {
             m_SearchFrontier.Add(null);
-        }
-        for (int i = 0; i < m_Graph.NumNodes(); i++)
-        {
             m_CostToThisNode.Add(0);
         }
+        Search();
+    }
 
+    public Graph_SearchDijkstra(SparseGraph graph, int source, int target)
+    {
+        m_Graph = graph;
+        m_iSource = source;
+        m_iTarget = target;
+        m_ShortestPathTree = new List<GraphEdge>(m_Graph.NumNodes());
+        m_SearchFrontier = new List<GraphEdge>(m_Graph.NumNodes());
+        m_CostToThisNode = new List<double>(m_Graph.NumNodes());
+        for (int i = 0; i < m_Graph.NumNodes(); i++)
+        {
+            m_ShortestPathTree.Add(null);
+            m_SearchFrontier.Add(null);
+            m_CostToThisNode.Add(0);
+        }
         Search();
     }
 

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DEMO_PickUp : MonoBehaviour
+public class PickUp : MonoBehaviour
 {
     //Hello! I am a pickup of some sorts.
     int itemType = (int)Config.PickUps.PU0;

@@ -116,7 +116,6 @@ public class Graph_SearchAStar// : MonoBehaviour
 
         Search();
     }
-
     //returns the vector of edges that defines the SPT. If a target was given
     //in the constructor then this will be an SPT comprising of all the nodes
     //examined before the target was found, else it will contain all the nodes

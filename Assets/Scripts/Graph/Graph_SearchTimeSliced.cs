@@ -100,7 +100,7 @@ public class Graph_SearchAStar_TS : Graph_SearchTimeSliced
 
         if (Config.visualizePathfinding)
         {
-            Visualizer.AddPathFinderMarker(((GraphNode_Demo)DEMO_Map.Graph().GetNode(NextClosestNode)).GetPos());
+            Visualizer.AddPathFinderMarker(((GraphNode_Demo)Map.Graph().GetNode(NextClosestNode)).GetPos());
         }
 
         //put the node on the SPT
@@ -256,7 +256,7 @@ public class Graph_SearchDijkstra_TS : Graph_SearchTimeSliced
 
         if (Config.visualizePathfinding)
         {
-            Visualizer.AddPathFinderMarker(((GraphNode_Demo)DEMO_Map.Graph().GetNode(NextClosestNode)).GetPos());
+            Visualizer.AddPathFinderMarker(((GraphNode_Demo)Map.Graph().GetNode(NextClosestNode)).GetPos());
         }
 
         //move this edge from the frontier to the shortest path tree

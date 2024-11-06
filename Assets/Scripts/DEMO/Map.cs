@@ -2,18 +2,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class DEMO_Map : MonoBehaviour
+public class Map : MonoBehaviour
 {
-    DEMO_Map() { }
+    Map() { }
     //this is a singleton
-    private static DEMO_Map instance = null;
-    public static DEMO_Map Instance
+    private static Map instance = null;
+    public static Map Instance
     {
         get
         {
             if (instance == null)
             {
-                instance = new GameObject().AddComponent<DEMO_Map>();
+                instance = new GameObject().AddComponent<Map>();
             }
             return instance;
         }

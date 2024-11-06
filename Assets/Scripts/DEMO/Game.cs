@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DEMO_Game : MonoBehaviour
+public class Game : MonoBehaviour
 {
     //this class manages all the path planning requests
     PathManager m_pPathManager;
 
-    List<DEMO_Character> characters = new List<DEMO_Character>();
-    public DEMO_Character selectedCharacter;
+    List<Character> characters = new List<Character>();
+    public Character selectedCharacter;
 
     // Start is called before the first frame update
     private void Awake()
@@ -46,11 +46,11 @@ public class DEMO_Game : MonoBehaviour
         Config.Instance.GetTextMap(0);
         if (Config.Instance.GetTextMap(0))
         {
-            DEMO_Map.LoadGridMap(Config.Instance.GetTextMap(map));
+            Map.LoadGridMap(Config.Instance.GetTextMap(map));
         }
         //spawn characters
-        characters.Add(Instantiate(Config.Instance.player, DEMO_Map.GetSpawnPoints()[0], Quaternion.identity).GetComponent<DEMO_Character>());
-        characters[0].GetComponent<DEMO_Character>().Initialize(this);
+        characters.Add(Instantiate(Config.Instance.player, Map.GetSpawnPoints()[0], Quaternion.identity).GetComponent<Character>());
+        characters[0].GetComponent<Character>().Initialize(this);
         //register characters with the entity manager
         foreach (var character in characters)
         {
@@ -77,7 +77,7 @@ public class DEMO_Game : MonoBehaviour
         if (Config.Instance.GetTextMap(0))
         {
             Debug.Log("DEMO_Game UnLoadGridMap");
-            DEMO_Map.UnLoadGridMap();
+            Map.UnLoadGridMap();
         }
     }
 
@@ -98,19 +98,19 @@ public class DEMO_Game : MonoBehaviour
 
     public void PaintWalls(Vector3 worldPos)
     {
-        int tile = DEMO_Map.GetTileIndexSafe(worldPos);
+        int tile = Map.GetTileIndexSafe(worldPos);
         if (tile != -1)
         {
-            if (DEMO_Map.GetTileObject(tile).gameObject.name == "floor(Clone)")
+            if (Map.GetTileObject(tile).gameObject.name == "floor(Clone)")
             {
                 //remove potential worldobject
-                DEMO_Map.RemoveWorldObject(tile);
+                Map.RemoveWorldObject(tile);
                 //Add wall
-                DEMO_Map.AddTileObject('X', tile);
+                Map.AddTileObject('X', tile);
             }
-            else if (DEMO_Map.GetTileObject(tile).gameObject.name == "wall(Clone)")
+            else if (Map.GetTileObject(tile).gameObject.name == "wall(Clone)")
             {
-                DEMO_Map.AddTileObject('0', tile);
+                Map.AddTileObject('0', tile);
             }
             //inform characters of graph change
             foreach (var character in characters)
@@ -122,28 +122,28 @@ public class DEMO_Game : MonoBehaviour
 
     public void PaintPickups(Vector3 worldPos)
     {
-        int tile = DEMO_Map.GetTileIndexSafe(worldPos);
+        int tile = Map.GetTileIndexSafe(worldPos);
         if (tile != -1)
         {
-            if (DEMO_Map.GetTileObject(tile).gameObject.name == "floor(Clone)")
+            if (Map.GetTileObject(tile).gameObject.name == "floor(Clone)")
             {
-                if (DEMO_Map.GetWorldObject(tile) is null)
+                if (Map.GetWorldObject(tile) is null)
                 {
-                    DEMO_Map.AddWorldObject(Config.GetTextMapWorldObject('G'), tile);
+                    Map.AddWorldObject(Config.GetTextMapWorldObject('G'), tile);
                 }
                 else
                 {
-                    DEMO_Map.RemoveWorldObject(tile);
+                    Map.RemoveWorldObject(tile);
                 }
                 foreach (var character in characters)
                 {
                     MessageDispatcher.DispatchMessage(MessageDispatcher.SEND_MSG_IMMEDIATELY, MessageDispatcher.SENDER_ID_IRRELEVANT, character.ID(), (int)messages.Msg_GraphItemChanged, new ExtraInfo_GraphItemChanged(tile));
                 }
             }
-            else if (DEMO_Map.GetTileObject(tile).gameObject.name == "wall(Clone)")
+            else if (Map.GetTileObject(tile).gameObject.name == "wall(Clone)")
             {
-                DEMO_Map.AddTileObject('0', tile);
-                DEMO_Map.AddWorldObject(Config.GetTextMapWorldObject('G'), tile);
+                Map.AddTileObject('0', tile);
+                Map.AddWorldObject(Config.GetTextMapWorldObject('G'), tile);
                 //inform characters of graph change
                 foreach (var character in characters)
                 {

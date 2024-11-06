@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class DEMO_Character : BaseGameEntity
+public class Character : BaseGameEntity
 {
     public GameObject pathMarker;
     List<GameObject> pathMarkers = new List<GameObject>();
@@ -10,10 +10,10 @@ public class DEMO_Character : BaseGameEntity
 
     List<PathEdge> currentPath = new List<PathEdge>();
 
-    DEMO_Game m_pWorld;
-    DEMO_PathPlanner pathPlanner;
+    Game m_pWorld;
+    PathPlanner pathPlanner;
 
-    public StateMachine<DEMO_Character> stateMachine;
+    public StateMachine<Character> stateMachine;
 
     public float movementSpeed = 1.0f;
     float boundingRadius = 0.4f;
@@ -29,7 +29,7 @@ public class DEMO_Character : BaseGameEntity
         return boundingRadius;
     }
 
-    public void Initialize(DEMO_Game gameWorld)
+    public void Initialize(Game gameWorld)
     {
         m_pWorld = gameWorld;
     }
@@ -37,16 +37,21 @@ public class DEMO_Character : BaseGameEntity
     // Start is called before the first frame update
     void Start()
     {
-        pathPlanner = new DEMO_PathPlanner(this);
+        pathPlanner = new PathPlanner(this);
         pathMarkerContainer = new GameObject("Path Markers");
     }
 
     // Update is called once per frame
     void Update()
     {
+        MoveAlongPath();
+    }
+
+    void MoveAlongPath()
+    {
         if (pathIndex < currentPath.Count)
         {
-            pathLerp += movementSpeed / (movementDistance+0.001f) * Time.deltaTime;
+            pathLerp += movementSpeed / (movementDistance + 0.001f) * Time.deltaTime;
             transform.position = Vector3.Lerp(currentPath[pathIndex].Source(), currentPath[pathIndex].Destination(), pathLerp);
 
             while (1.0f < pathLerp)
@@ -125,7 +130,7 @@ public class DEMO_Character : BaseGameEntity
         pathMarkers.Clear();
     }
 
-    public DEMO_Game GetWorld()
+    public Game GetWorld()
     {
         return m_pWorld;
     }
@@ -139,7 +144,7 @@ public class DEMO_Character : BaseGameEntity
     {
         Debug.Log("EntityStart()");
         SetAutomaticID();
-        stateMachine = new StateMachine<DEMO_Character>(this);
+        stateMachine = new StateMachine<Character>(this);
         stateMachine.SetGlobalState(CharacterStateGlobal.Instance);
         stateMachine.SetCurrentState(CharacterStateIdle.Instance);
     }

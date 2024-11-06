@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class DEMO_UserInterface : MonoBehaviour
+public class UserInterface : MonoBehaviour
 {
     //UI
     public Slider sliderTimeScale;
@@ -17,20 +17,15 @@ public class DEMO_UserInterface : MonoBehaviour
     public TMP_Dropdown dropdownAlgorithms;
     public TMP_Dropdown dropdownHeuristics;
 
-    //public GameObject nodeGO;
-    //public GameObject edgeGO;
-    //public GameObject pathNodeGO;
-    //public GameObject pathEdgeGO;
-
     bool paintPickups = false;
     int previousPaintTile = -1;
 
-    DEMO_Game gameWorld;
+    Game gameWorld;
 
     // Start is called before the first frame update
     void Start()
     {
-        gameWorld = new GameObject("GameWorld").AddComponent<DEMO_Game>();
+        gameWorld = new GameObject("GameWorld").AddComponent<Game>();
 
         InitializeUI();
     }
@@ -50,7 +45,7 @@ public class DEMO_UserInterface : MonoBehaviour
             }
 
             Vector3 gridWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0.5f, 0.5f, 0);
-            int paintTile = DEMO_Map.GetTileIndexSafe(gridWorldPos);
+            int paintTile = Map.GetTileIndexSafe(gridWorldPos);
             if (paintTile != previousPaintTile)
             {
                 previousPaintTile = paintTile;
@@ -110,7 +105,7 @@ public class DEMO_UserInterface : MonoBehaviour
         textTimeSlice.text = "Time Slices: " + sliderTimeSlice.value.ToString();
         if (Config.timeSliceUpdates == 0)
         {
-            Config.timeSliceUpdates = (uint)DEMO_Map.MapString().Length;
+            Config.timeSliceUpdates = (uint)Map.MapString().Length;
         }
     }
     public void OnMapSelect()
@@ -133,12 +128,12 @@ public class DEMO_UserInterface : MonoBehaviour
     public void ShowGraph()
     {
         Config.visualizeGraph = !Config.visualizeGraph;
-        DEMO_Map.VisualizeGraph(Config.visualizeGraph);
+        Map.VisualizeGraph(Config.visualizeGraph);
     }
     public void ShowTiles()
     {
         Config.visualizeTiles = !Config.visualizeTiles;
-        DEMO_Map.VisualizeTiles(Config.visualizeTiles);
+        Map.VisualizeTiles(Config.visualizeTiles);
     }
     public void ShowPath()
     {
@@ -182,41 +177,45 @@ public class DEMO_UserInterface : MonoBehaviour
 
     public void RunTimeTest()
     {
-        int source = DEMO_Map.assignmentSourceNode;
-        int target = DEMO_Map.assignmentTargetNode;
+        int source = Map.assignmentSourceNode;
+        int target = Map.assignmentTargetNode;
         //DFS
         double time = Time.realtimeSinceStartupAsDouble;
-        Graph_SearchDFS searchDFS = new Graph_SearchDFS(DEMO_Map.Graph(), source, target);
+        Graph_SearchDFS searchDFS = new Graph_SearchDFS(Map.Graph(), source, target);
         double searchTimeDFS = Time.realtimeSinceStartupAsDouble - time;
         //BFS
         time = Time.realtimeSinceStartupAsDouble;
-        new Graph_SearchBFS(DEMO_Map.Graph(), source, target);
+        new Graph_SearchBFS(Map.Graph(), source, target);
         double searchTimeBFS = Time.realtimeSinceStartupAsDouble - time;
         //Dijkstra
         time = Time.realtimeSinceStartupAsDouble;
-        new Graph_SearchDijkstra(DEMO_Map.Graph(), source, new Termination_Condition_Find_Node(target));
+        //new Graph_SearchDijkstra(DEMO_Map.Graph(), source, target);
+        new Graph_SearchDijkstra(Map.Graph(), source, new Termination_Condition_Find_Node(target));
         double searchTimeDijkstra = Time.realtimeSinceStartupAsDouble - time;
         //A-Star
         time = Time.realtimeSinceStartupAsDouble;
-        new Graph_SearchAStar(DEMO_Map.Graph(), new AStarHeuristic_Dijkstra(), source, target);
+        Graph_SearchAStar astarSearch = new Graph_SearchAStar(Map.Graph(), new AStarHeuristic_Dijkstra(), source, target);
         double searchTimeAstarDijkstra = Time.realtimeSinceStartupAsDouble - time;
         time = Time.realtimeSinceStartupAsDouble;
-        new Graph_SearchAStar(DEMO_Map.Graph(), new AStarHeuristic_Euclid(), source, target);
+        new Graph_SearchAStar(Map.Graph(), new AStarHeuristic_Euclid(), source, target);
         double searchTimeAstarEuclid = Time.realtimeSinceStartupAsDouble - time;
         time = Time.realtimeSinceStartupAsDouble;
-        new Graph_SearchAStar(DEMO_Map.Graph(), new AStarHeuristic_Noisy_Euclidian(), source, target);
+        new Graph_SearchAStar(Map.Graph(), new AStarHeuristic_Noisy_Euclidian(), source, target);
         double searchTimeAstarNoisy_Euclidian = Time.realtimeSinceStartupAsDouble - time;
         time = Time.realtimeSinceStartupAsDouble;
-        new Graph_SearchAStar(DEMO_Map.Graph(), new AStarHeuristic_Manhattan(), source, target);
+        new Graph_SearchAStar(Map.Graph(), new AStarHeuristic_Manhattan(), source, target);
         double searchTimeAstarManhattan = Time.realtimeSinceStartupAsDouble - time;
 
-        Debug.Log("SEARCH TIME TEST ON MAP " + Config.GetTextMaps()[dropdownMaps.value].name + " (S) :");
-        Debug.Log("\tSearch time DFS: " + searchTimeDFS.ToString());
-        Debug.Log("\tSearch time BFS: " + searchTimeBFS.ToString());
-        Debug.Log("\tSearch time Dijkstra: " + searchTimeDijkstra.ToString());
-        Debug.Log("\tSearch time Astar (Heuristic : Dijkstra): " + searchTimeAstarDijkstra.ToString());
-        Debug.Log("\tSearch time Astar (Heuristic : Euclidian): " + searchTimeAstarEuclid.ToString());
-        Debug.Log("\tSearch time Astar (Heuristic : Noisy Euclidian): " + searchTimeAstarNoisy_Euclidian.ToString());
-        Debug.Log("\tSearch time Astar (Heuristic : Manhattan): " + searchTimeAstarManhattan.ToString());
+        //to milliseconds
+        double scale = 1000;
+
+        Debug.Log("SEARCH TIME TEST ON MAP " + Config.GetTextMaps()[dropdownMaps.value].name + " (ms) :");
+        Debug.Log("\tSearch time DFS: " + (searchTimeDFS * scale).ToString());
+        Debug.Log("\tSearch time BFS: " + (searchTimeBFS * scale).ToString());
+        Debug.Log("\tSearch time Dijkstra: " + (searchTimeDijkstra * scale).ToString());
+        Debug.Log("\tSearch time Astar (Heuristic : Dijkstra): " + (searchTimeAstarDijkstra * scale).ToString());
+        Debug.Log("\tSearch time Astar (Heuristic : Euclidian): " + (searchTimeAstarEuclid * scale).ToString());
+        Debug.Log("\tSearch time Astar (Heuristic : Noisy Euclidian): " + (searchTimeAstarNoisy_Euclidian * scale).ToString());
+        Debug.Log("\tSearch time Astar (Heuristic : Manhattan): " + (searchTimeAstarManhattan * scale).ToString());
     }
 }

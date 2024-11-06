@@ -36,6 +36,7 @@ public class Graph_SearchDFS
         {
             //grab the next edge and remove it from the stack
             GraphEdge Next = stack.Pop();
+            Visualizer.AddPathFinderMarker(((GraphNode_Demo)Map.Graph().GetNode(Next.To())).GetPos());
             //make a note of the parent of the node this edge points to
             m_Route[Next.To()] = Next.From();
             //put it on the tree. (making sure the dummy edge is not placed on the tree)

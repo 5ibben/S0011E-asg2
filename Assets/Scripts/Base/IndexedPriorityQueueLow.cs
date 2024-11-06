@@ -1,10 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IndexedPriorityQueueLow// : MonoBehaviour
+public class IndexedPriorityQueueLow
 {
-
     List<double>  m_vecKeys;
     List<int> m_Heap;
     List<int> m_invHeap;
@@ -77,13 +75,11 @@ public class IndexedPriorityQueueLow// : MonoBehaviour
         for (int i = 0; i < m_Heap.Capacity; i++)
         {
             m_Heap.Add(0);
-            //m_Heap[i] = 0;
         }
         m_invHeap = new List<int>(MaxSize + 1);
         for (int i = 0; i < m_invHeap.Capacity; i++)
         {
             m_invHeap.Add(0);
-            //m_invHeap[i] = 0;
         }
     }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 public class PathManager
 {
     //a container of all the active search requests
-    List<DEMO_PathPlanner> m_SearchRequests = new List<DEMO_PathPlanner>();
+    List<PathPlanner> m_SearchRequests = new List<PathPlanner>();
 
     public PathManager()
     {
@@ -40,7 +40,7 @@ public class PathManager
     //a path planner should call this method to register a search with the 
     //manager. (The method checks to ensure the path planner is only registered
     //once)
-    public void Register(DEMO_PathPlanner pPathPlanner)
+    public void Register(PathPlanner pPathPlanner)
     {
         //make sure the bot does not already have a current search in the queue
         if (!m_SearchRequests.Contains(pPathPlanner))
@@ -51,7 +51,7 @@ public class PathManager
         }
     }
 
-    public void UnRegister(DEMO_PathPlanner pPathPlanner)
+    public void UnRegister(PathPlanner pPathPlanner)
     {
         m_SearchRequests.Remove(pPathPlanner);
     }

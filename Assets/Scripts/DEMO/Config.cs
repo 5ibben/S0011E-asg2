@@ -27,7 +27,7 @@ public class Config : MonoBehaviour
     public static bool simplifiedPath = true;
 
     public static int searchAlgorithm = (int)algorithms.ASTAR;
-    public static int searchHeuristic = (int)heuristics.Euclid;
+    public static int searchHeuristic = (int)heuristics.Euclidian;
     public static uint timeSliceUpdates = 1;
 
     Dictionary<char, int> textMapTileCosts = new Dictionary<char, int>();
@@ -44,7 +44,7 @@ public class Config : MonoBehaviour
     }
     public enum heuristics//ASTAR heuristic
     {
-        Euclid, Euclid_Noisy, Dijkstra, Manhattan
+        Euclidian, Euclid_Noisy, Dijkstra, Manhattan
     }
 
     Config() 

@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class CharacterStateGlobal : State<DEMO_Character>
+public class CharacterStateGlobal : State<Character>
 {
     CharacterStateGlobal() { }
 
@@ -20,7 +17,7 @@ public class CharacterStateGlobal : State<DEMO_Character>
         }
     }
 
-    public override bool OnMessage(DEMO_Character character, Telegram msg)
+    public override bool OnMessage(Character character, Telegram msg)
     {
         switch (msg.Msg)
         {
@@ -48,7 +45,7 @@ public class CharacterStateGlobal : State<DEMO_Character>
     }
 }
 
-public class CharacterStateIdle : State<DEMO_Character>
+public class CharacterStateIdle : State<Character>
 {
     CharacterStateIdle() { }
 
@@ -66,7 +63,7 @@ public class CharacterStateIdle : State<DEMO_Character>
         }
     }
 
-    public override bool OnMessage(DEMO_Character character, Telegram msg)
+    public override bool OnMessage(Character character, Telegram msg)
     {
         if (msg.Msg == (int)messages.Msg_GraphChanged)
         {
@@ -76,7 +73,7 @@ public class CharacterStateIdle : State<DEMO_Character>
     }
 }
 
-public class CharacterStateFindDestination : State<DEMO_Character>
+public class CharacterStateFindDestination : State<Character>
 {
     CharacterStateFindDestination() { }
 
@@ -93,12 +90,12 @@ public class CharacterStateFindDestination : State<DEMO_Character>
             return instance;
         }
     }
-    public override void Enter(DEMO_Character character)
+    public override void Enter(Character character)
     {
         character.RequestMove();
     }
 
-    public override void Execute(DEMO_Character character)
+    public override void Execute(Character character)
     {
         if (!character.is_moving)
         {
@@ -106,7 +103,7 @@ public class CharacterStateFindDestination : State<DEMO_Character>
         }
     }
 
-    public override bool OnMessage(DEMO_Character character, Telegram msg)
+    public override bool OnMessage(Character character, Telegram msg)
     {
         if (msg.Msg == (int)messages.Msg_GraphChanged)
         {
@@ -117,7 +114,7 @@ public class CharacterStateFindDestination : State<DEMO_Character>
     }
 }
 
-public class CharacterStateFindItem : State<DEMO_Character>
+public class CharacterStateFindItem : State<Character>
 {
     CharacterStateFindItem() { }
 
@@ -134,12 +131,12 @@ public class CharacterStateFindItem : State<DEMO_Character>
             return instance;
         }
     }
-    public override void Enter(DEMO_Character character)
+    public override void Enter(Character character)
     {
         character.FindItem();
     }
 
-    public override void Execute(DEMO_Character character)
+    public override void Execute(Character character)
     {
         if (!character.is_moving)
         {
@@ -147,7 +144,7 @@ public class CharacterStateFindItem : State<DEMO_Character>
         }
     }
 
-    public override bool OnMessage(DEMO_Character character, Telegram msg)
+    public override bool OnMessage(Character character, Telegram msg)
     {
         if (msg.Msg == (int)messages.Msg_GraphChanged)
         {

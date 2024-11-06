@@ -35,7 +35,7 @@ public class Termination_Condition_Find_Object : Graph_Serach_Termination_Condit
         GameObject item = ((GraphNode_Demo)(graph.GetNode(CurrentNodeIdx))).GetItem();
         if (item != null)
         {
-            if (targetItem == item.GetComponent<DEMO_PickUp>().ItemType())
+            if (targetItem == item.GetComponent<PickUp>().ItemType())
             {
                 return true;
             }
@@ -44,12 +44,12 @@ public class Termination_Condition_Find_Object : Graph_Serach_Termination_Condit
     }
 }
 
-public class DEMO_PathPlanner
+public class PathPlanner
 {
     //for legibility
     const int no_closest_node_found = -1;
     //A pointer to the owner of this class
-    DEMO_Character m_pOwner;
+    Character m_pOwner;
     //a local reference to the navgraph
     SparseGraph m_NavGraph;
     //a pointer to an instance of the current graph search algorithm.
@@ -66,12 +66,12 @@ public class DEMO_PathPlanner
     //THIS IS A SIMPLIFIED VERSION THAT ONLY WORKS WITH GRID GRAPHS
     int GetClosestNodeToPosition(Vector2 pos) 
     {
-        int ClosestNode = DEMO_Map.GetTileIndex(pos + new Vector2(0.5f, 0.5f));
+        int ClosestNode = Map.GetTileIndex(pos + new Vector2(0.5f, 0.5f));
 
 
-        if (0 < ClosestNode && ClosestNode < DEMO_Map.MapString().Length)
+        if (0 < ClosestNode && ClosestNode < Map.MapString().Length)
         {
-            if (DEMO_Map.Graph().GetNode(ClosestNode).Index() != Nodetype.invalid_node_index)
+            if (Map.Graph().GetNode(ClosestNode).Index() != Nodetype.invalid_node_index)
             {
                 //Debug.Log("returnbing closest node: " + ClosestNode);
                 return ClosestNode;
@@ -79,7 +79,7 @@ public class DEMO_PathPlanner
         }
         return no_closest_node_found;
     }
-    public DEMO_PathPlanner(DEMO_Character owner)
+    public PathPlanner(Character owner)
     {
         m_pOwner = owner;
     }
@@ -97,7 +97,7 @@ public class DEMO_PathPlanner
         {
             Vector2 from = path[node0];
             Vector2 to = path[node1];
-            if (DEMO_Map.DoWallsIntersectCircle(from, to, m_pOwner.BoundingRadius()))
+            if (Map.DoWallsIntersectCircle(from, to, m_pOwner.BoundingRadius()))
             {
                 smoothPath.Add(path[node1 - 1]);
                 node0 = node1 - 1;
@@ -124,7 +124,7 @@ public class DEMO_PathPlanner
 
         while (edge1 < path.Count)
         {
-            if (DEMO_Map.DoWallsIntersectCircle(path[edge0].Source(), path[edge1].Destination(), m_pOwner.BoundingRadius()))
+            if (Map.DoWallsIntersectCircle(path[edge0].Source(), path[edge1].Destination(), m_pOwner.BoundingRadius()))
             {
                 smoothPath.Add(path[edge0]);
                 edge0 = edge1;
@@ -162,7 +162,7 @@ public class DEMO_PathPlanner
     public bool RequestPathToPosition(Vector2 TargetPos, List<PathEdge> path)
     {
         //check target bounds
-        if (!DEMO_Map.CheckBounds(TargetPos + new Vector2(0.5f,0.5f)))
+        if (!Map.CheckBounds(TargetPos + new Vector2(0.5f,0.5f)))
         {
             return false;
         }
@@ -172,7 +172,7 @@ public class DEMO_PathPlanner
         m_vDestinationPos = TargetPos;
 
         //if the target is unobstructed from the bot's position, a path does not need to be calculated, and the bot can ARRIVE directly at the destination.
-        if (!DEMO_Map.DoWallsIntersectCircle(m_pOwner.transform.position, TargetPos, m_pOwner.BoundingRadius()))
+        if (!Map.DoWallsIntersectCircle(m_pOwner.transform.position, TargetPos, m_pOwner.BoundingRadius()))
         {
             path.Add(new PathEdge(m_pOwner.transform.position, TargetPos, 0, 0));
             return true;
@@ -201,9 +201,9 @@ public class DEMO_PathPlanner
         {
             Debug.Log("search using ASTAR");
             AStarHeuristic heuristic = new AStarHeuristic_Euclid();
-            if (Config.searchHeuristic == (int)Config.heuristics.Euclid)
+            if (Config.searchHeuristic == (int)Config.heuristics.Euclidian)
             {
-                Debug.Log("\tEuclid");
+                Debug.Log("\tEuclidian");
             }
             else if (Config.searchHeuristic == (int)Config.heuristics.Euclid_Noisy)
             {
@@ -220,12 +220,12 @@ public class DEMO_PathPlanner
                 Debug.Log("\tManhattan");
                 heuristic = new AStarHeuristic_Manhattan();
             }
-            m_pCurrentSearch = new Graph_SearchAStar_TS(DEMO_Map.Graph(), heuristic, ClosestNodeToBot, ClosestNodeToTarget);
+            m_pCurrentSearch = new Graph_SearchAStar_TS(Map.Graph(), heuristic, ClosestNodeToBot, ClosestNodeToTarget);
         }
         else if(Config.searchAlgorithm == (int)Config.algorithms.Dijkstra)
         {
             Debug.Log("search using dijkstra");
-            m_pCurrentSearch = new Graph_SearchDijkstra_TS(DEMO_Map.Graph(), ClosestNodeToBot, new Termination_Condition_Find_Node(ClosestNodeToTarget));
+            m_pCurrentSearch = new Graph_SearchDijkstra_TS(Map.Graph(), ClosestNodeToBot, new Termination_Condition_Find_Node(ClosestNodeToTarget));
         }
 
         //and register the search with the path manager
@@ -250,7 +250,7 @@ public class DEMO_PathPlanner
         }
 
         //create an instance of the search algorithm
-        m_pCurrentSearch = new Graph_SearchDijkstra_TS(DEMO_Map.Graph(), ClosestNodeToBot, new Termination_Condition_Find_Object(ItemType));
+        m_pCurrentSearch = new Graph_SearchDijkstra_TS(Map.Graph(), ClosestNodeToBot, new Termination_Condition_Find_Object(ItemType));
 
         //and register the search with the path manager
         m_pOwner.GetWorld().GetPathManager().Register(this);
@@ -277,7 +277,7 @@ public class DEMO_PathPlanner
         //add edge to destination
         if (m_pCurrentSearch.GetType() == Graph_SearchTimeSliced.SearchType.AStar)
         {
-            if (!(DEMO_Map.DoWallsIntersectCircle(path[path.Count - 1].Destination(), m_vDestinationPos, m_pOwner.BoundingRadius())))
+            if (!(Map.DoWallsIntersectCircle(path[path.Count - 1].Destination(), m_vDestinationPos, m_pOwner.BoundingRadius())))
             {
                 path.Add(new PathEdge(path[path.Count-1].Destination(), m_vDestinationPos, 0, -1));
             }
@@ -320,6 +320,6 @@ public class DEMO_PathPlanner
 
     public Vector2 GetNodePosition(int idx)
     {
-        return ((GraphNode_Demo)DEMO_Map.Graph().GetNode(idx)).GetPos();
+        return ((GraphNode_Demo)Map.Graph().GetNode(idx)).GetPos();
     }
 }
