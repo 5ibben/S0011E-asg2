@@ -52,16 +52,17 @@ public class Map : MonoBehaviour
         //calculate map dimensions
         string mapstring = map.ToString();
         int width = 0;
-        while (mapstring[width] != '\n')
+        while (mapstring[width] != '\n' && mapstring[width] != '\r')
         {
             width++;
         }
-        mapWidth = width-1;//-1 for newline character
-        mapHeight = mapstring.Length / width;
-
         //remove junk
         mapstring = mapstring.Replace("\n", "");
         mapstring = mapstring.Replace("\r", "");
+
+        //set dimensions
+        mapWidth = width;
+        mapHeight = mapstring.Length / width;
 
         //set orientation
         if (Config.mapFlipX)
